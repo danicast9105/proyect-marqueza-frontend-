@@ -230,18 +230,23 @@ const saveUsuarios = (usuarios) => {
 const renderTabla = (filtro = "") => {
     if (!tableBody) return;
     // Mapeamos los usuarios para conservar su índice original del localStorage
-    let usuarios = getUsuarios().map((u, i) => ({ ...u, originalIndex: i }));
+    const registros = getUsuarios();
+    let usuarios = registros.map((u, i) => ({ ...u, originalIndex: i }));
 
     // Lógica de filtrado
     if (filtro) {
         const termino = filtro.toLowerCase();
-        usuarios = usuarios.filter(u => 
-            u.nombre.toLowerCase().includes(termino) || 
-            u.correo.toLowerCase().includes(termino)
+        usuarios = usuarios.filter(u =>
+            String(u.nombre || "").toLowerCase().includes(termino) ||
+            String(u.correo || "").toLowerCase().includes(termino)
         );
     }
 
     tableBody.innerHTML = ""; 
+
+    const emptyState = document.querySelector(".empty-state");
+    if (emptyState) emptyState.style.display = usuarios.length ? "none" : "block";
+    updateSummary(registros, usuarios);
 
     usuarios.forEach((usuario) => {
         const tr = document.createElement("tr");
@@ -250,11 +255,26 @@ const renderTabla = (filtro = "") => {
             <td>${usuario.correo}</td>
             <td>${usuario.rol}</td>
             <td>********</td>
-            <td><button class="btn-editar" onclick="editarUsuario(${usuario.originalIndex})">Editar</button></td>
-            <td><button class="btn-eliminar" onclick="eliminarUsuario(${usuario.originalIndex})">Eliminar</button></td>
+            <td><button type="button" class="btn-editar" data-index="${usuario.originalIndex}" title="Editar" aria-label="Editar"><i class="bx bx-pencil" aria-hidden="true"></i></button></td>
+            <td><button type="button" class="btn-eliminar" data-index="${usuario.originalIndex}" title="Eliminar" aria-label="Eliminar"><i class="bx bx-trash-alt" aria-hidden="true"></i></button></td>
         `;
         tableBody.appendChild(tr);
     });
+};
+
+const updateSummary = (registros, visibles) => {
+    const setText = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value;
+    };
+    const administradores = registros.filter(usuario => usuario.rol === "Administrador").length;
+    const empleados = registros.filter(usuario => usuario.rol === "Empleado").length;
+    const correos = registros.filter(usuario => String(usuario.correo || "").trim()).length;
+    setText("totalUsuarios", registros.length);
+    setText("administradoresUsuarios", administradores);
+    setText("empleadosUsuarios", empleados);
+    setText("correosUsuarios", `${registros.length ? Math.round((correos / registros.length) * 100) : 0}%`);
+    setText("resultadosUsuarios", `${visibles.length} ${visibles.length === 1 ? "resultado" : "resultados"}`);
 };
 
 // --- Listeners para Búsqueda ---
@@ -262,6 +282,14 @@ btnBuscar?.addEventListener("click", () => renderTabla(searchInput.value));
 
 // Búsqueda en tiempo real mientras el usuario escribe
 searchInput?.addEventListener("input", () => renderTabla(searchInput.value));
+
+tableBody?.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-index]");
+    if (!button) return;
+    const index = Number(button.dataset.index);
+    if (button.classList.contains("btn-editar")) editarUsuario(index);
+    if (button.classList.contains("btn-eliminar")) eliminarUsuario(index);
+});
 
 // --- Control del Modal de Agregar ---
 btnAgregar?.addEventListener("click", () => {
@@ -349,6 +377,7 @@ formUsuario?.addEventListener("submit", (e) => {
     }
 
     usuarios.push({ nombre, correo, rol, contrasena });
+    window.MarquezaAudit?.recordChange("create", STORAGE_KEY, usuarios[usuarios.length - 1]);
     saveUsuarios(usuarios);
     renderTabla(searchInput.value);
     cerrarModal();
@@ -403,6 +432,7 @@ formEditarUsuario?.addEventListener("submit", (e) => {
         contrasena: nuevaPass || usuarioActual.contrasena
     };
 
+    window.MarquezaAudit?.recordChange("update", STORAGE_KEY, usuarios[index]);
     saveUsuarios(usuarios);
     renderTabla(searchInput.value);
     cerrarEditModal();
@@ -440,7 +470,8 @@ window.eliminarUsuario = (index) => {
     }).then((result) => {
         if (result.isConfirmed) {
             const usuarios = getUsuarios();
-            usuarios.splice(index, 1);
+            const [usuario] = usuarios.splice(index, 1);
+            window.MarquezaAudit?.recordChange("delete", STORAGE_KEY, usuario);
             saveUsuarios(usuarios);
             renderTabla(searchInput.value);
             Swal.fire('¡Eliminado!', 'El usuario ha sido removido.', 'success');
@@ -450,3 +481,6 @@ window.eliminarUsuario = (index) => {
 
 // Inicializar la tabla al cargar el script
 renderTabla();
+window.MarquezaRealtime?.subscribe(({ key }) => {
+    if (key === STORAGE_KEY) renderTabla(searchInput.value);
+});

@@ -6,27 +6,26 @@
 }
 
 body {
-    background-image: url(../../frontend/fondo/background\ 4.png);
+    background-image: url('../fondo/background 4.png');
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
     background-attachment: fixed;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     min-height: 100vh;
-    padding: 20px;
+    padding: 30px 0;
 }
 
 .contenedor {
-    width: min(1200px, 100%);
-    max-width: 1200px;
+    width: 1200px;
     min-height: 600px;
     height: auto;
     background: #fff;
     border-radius: 15px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px rgba(14, 77, 160, 0.12);
     display: flex;
 }
 
@@ -142,7 +141,6 @@ body {
 .cabecera_titulo {
     align-items: center;
     display: flex;
-    margin-top: 25px;
 }
 
 .Icono {
@@ -173,9 +171,21 @@ body {
     margin-bottom: 10px;
 }
 
+.titulo_2 {
+    font-size: 20px;
+}
 .texto {
     color: #777;
     margin-bottom: 18px;
+}
+
+.options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    margin-bottom: 20px;
+    color: #777;
 }
 
 .formulario label {
@@ -192,17 +202,18 @@ body {
     outline: none;
 }
 
-.options {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 14px;
-    margin-bottom: 20px;
+.formulario select{
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    outline: none;
+    color: black;
 }
 
-.options a {
-    color: #1e90ff;
-    text-decoration: none;
+.formulario select option {
+    color: black;
 }
 
 button {
@@ -264,6 +275,12 @@ button:hover {
         border-radius: 0;
     }
 
+    .formulario.right {
+        width: 100%;
+        flex: 1;
+        min-height: auto;
+    }
+
     .fondo.left::before,
     .fondo.left::after {
         left: -140%;
@@ -277,9 +294,6 @@ button:hover {
     }
 
     .formulario.right {
-        width: 100%;
-        flex: 1;
-        min-height: auto;
         padding: 15px;
     }
 
@@ -332,7 +346,6 @@ button:hover {
         width: 100%;
         flex: 1;
         min-height: auto;
-        padding: 20px;
     }
 
     .fondo.left::before,
@@ -345,6 +358,11 @@ button:hover {
     .fondo.left img {
         width: 80%;
         max-width: 240px;
+    }
+
+    .formulario.right {
+        width: 100%;
+        padding: 20px;
     }
 
     .cabecera_titulo {
