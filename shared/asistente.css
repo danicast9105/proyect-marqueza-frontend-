@@ -132,7 +132,9 @@
 }
 
 .marqueza-assistant-close,
-.marqueza-assistant-send {
+.marqueza-assistant-voice-toggle,
+.marqueza-assistant-send,
+.marqueza-assistant-mic {
     display: grid;
     width: 38px;
     height: 38px;
@@ -150,6 +152,20 @@
 
 .marqueza-assistant-close:hover {
     background: rgba(255, 255, 255, 0.12);
+}
+
+.marqueza-assistant-voice-toggle {
+    background: transparent;
+    color: #fff;
+    font-size: 18px;
+}
+
+.marqueza-assistant-voice-toggle:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.marqueza-assistant-voice-toggle.is-active {
+    color: var(--assistant-highlight);
 }
 
 .marqueza-assistant-messages {
@@ -256,6 +272,46 @@
 
 .marqueza-assistant-send:hover {
     background: var(--assistant-accent-dark);
+}
+
+.marqueza-assistant-mic {
+    background: transparent;
+    border: 1px solid var(--assistant-border);
+    color: var(--assistant-ink);
+    font-size: 19px;
+}
+
+.marqueza-assistant-mic:hover {
+    background: rgba(39, 183, 245, 0.14);
+}
+
+.marqueza-assistant-mic[disabled] {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.marqueza-assistant-mic.is-listening {
+    border-color: var(--assistant-highlight);
+    background: rgba(255, 127, 102, 0.18);
+    color: var(--assistant-highlight);
+    animation: marqueza-assistant-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes marqueza-assistant-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 127, 102, 0.45); }
+    50% { box-shadow: 0 0 0 7px rgba(255, 127, 102, 0); }
+}
+
+.marqueza-assistant-status {
+    margin: 0 15px 8px;
+    color: var(--assistant-muted);
+    font-size: 11px;
+    font-style: italic;
+    min-height: 14px;
+}
+
+.marqueza-assistant-status:empty {
+    display: none;
 }
 
 body.dark .marqueza-assistant-panel {
