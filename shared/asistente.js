@@ -7,20 +7,115 @@
     stylesheet.href = new URL("asistente.css", scriptUrl).href;
     document.head.appendChild(stylesheet);
 
-    const modules = [
-        { name: "Inicio", key: "", aliases: ["inicio", "dashboard", "panel", "resumen"], description: "un panel con indicadores y gráficas de ventas, cotizaciones e inventario", details: "Resume la actividad comercial y muestra comparaciones de ventas, cotizaciones y existencias.", countQuestion: "¿Qué módulos tiene MARQUEZA?", createQuestion: "¿Qué información muestra el inicio?" },
-        { name: "Insumos", key: "marqueza_insumos", aliases: ["insumo", "insumos", "material", "materiales"], description: "la gestión del inventario de materias primas e insumos", details: "Permite consultar nombre, código, cantidad, precio, estado y proveedor relacionado.", singular: "insumo", plural: "insumos", countQuestion: "¿Cuántos insumos hay?", createQuestion: "¿Cómo registro un insumo?" },
-        { name: "Productos", key: "marqueza_productos", aliases: ["producto", "productos", "prenda", "prendas"], description: "la gestión del catálogo y las existencias de productos", details: "Organiza los productos con su código, nombre, cantidad disponible, precio y estado.", singular: "producto", plural: "productos", countQuestion: "¿Cuántos productos hay?", createQuestion: "¿Cómo creo un producto?" },
-        { name: "Ventas", key: "marqueza_ventas", aliases: ["venta", "ventas"], description: "el registro y consulta de ventas", details: "Las ventas se relacionan con clientes y productos; el total depende de las cantidades y precios registrados.", singular: "venta", plural: "ventas", countQuestion: "¿Cuántas ventas hay?", createQuestion: "¿Cómo registro una venta?" },
-        { name: "Cotizaciones", key: "marqueza_cotizaciones", aliases: ["cotizacion", "cotizaciones", "propuesta", "propuestas"], description: "la creación y seguimiento de cotizaciones para clientes", details: "Una cotización puede incluir productos, cantidades, precios y un total. En esta pantalla aparecen los estados Pendiente, Enviada, Aprobada y Rechazada.", singular: "cotización", plural: "cotizaciones", countQuestion: "¿Cuántas cotizaciones hay?", createQuestion: "¿Qué estados puede tener una cotización?" },
-        { name: "Clientes", key: "marqueza_clientes", aliases: ["cliente", "clientes"], description: "los datos de contacto de los clientes", details: "La pantalla de clientes permite manejar nombre, documento, teléfono y correo.", singular: "cliente", plural: "clientes", countQuestion: "¿Cuántos clientes hay?", createQuestion: "¿Cómo registro un cliente?" },
-        { name: "Proveedores", key: "marqueza_proveedores", aliases: ["proveedor", "proveedores"], description: "la información de los proveedores", details: "El proyecto relaciona proveedores con información de persona y canales de contacto.", singular: "proveedor", plural: "proveedores", countQuestion: "¿Cuántos proveedores hay?", createQuestion: "¿Cómo agrego un proveedor?" },
-        { name: "Usuarios", key: "marqueza_usuarios", aliases: ["usuario", "usuarios", "cuenta", "cuentas"], description: "las cuentas y roles de acceso al sistema", details: "El módulo administra cuentas y sus datos de acceso. No compartas contraseñas en este chat.", singular: "usuario", plural: "usuarios", countQuestion: "¿Cuántos usuarios hay?", createQuestion: "¿Cómo registro un usuario?" },
-        { name: "Registro de actividad", key: "marqueza_bitacora", aliases: ["registro de actividad", "actividad", "auditoria", "historial", "errores"], description: "el historial de actividad registrado en la aplicación", details: "Permite consultar eventos de auditoría, acciones y actividad guardada por la aplicación.", singular: "evento", plural: "eventos", countQuestion: "¿Cuántos eventos hay?", createQuestion: "¿Qué guarda el registro de actividad?" }
+    const dataModules = [
+        {
+            name: "Insumos",
+            key: "marqueza_insumos",
+            aliases: ["insumo", "insumos", "material", "materiales"],
+            description: "administra materias primas y suministros usados por el negocio",
+            fields: ["nombre", "categoría", "proveedor", "cantidad", "unidad", "precio unitario", "estado"],
+            details: "El resumen muestra el número de registros, insumos con stock bajo, los marcados como disponibles y el valor estimado (cantidad por precio unitario).",
+            relations: ["El proveedor se selecciona desde el directorio de Proveedores."],
+            statuses: ["Disponible", "Agotado", "Pedido"],
+            createQuestion: "¿Cómo registro un insumo?"
+        },
+        {
+            name: "Productos",
+            key: "marqueza_productos",
+            aliases: ["producto", "productos", "prenda", "prendas"],
+            description: "administra el catálogo de productos y sus existencias",
+            fields: ["código", "nombre", "cantidad", "precio", "estado"],
+            details: "El resumen presenta referencias, productos con stock bajo, unidades disponibles y valor del catálogo. La etiqueta de stock se calcula por cantidad: Bajo hasta 5, Medio de 6 a 20 y Bueno por encima de 20.",
+            relations: [],
+            statuses: ["Bajo (hasta 5 unidades)", "Medio (de 6 a 20 unidades)", "Bueno (más de 20 unidades)"],
+            createQuestion: "¿Cómo creo un producto?"
+        },
+        {
+            name: "Ventas",
+            key: "marqueza_ventas",
+            aliases: ["venta", "ventas", "pedido", "pedidos"],
+            description: "registra y consulta operaciones de venta",
+            fields: ["fecha", "cliente", "producto", "cantidad", "total"],
+            details: "El resumen muestra cantidad de ventas, ingresos acumulados, unidades vendidas y promedio por operación.",
+            relations: ["El formulario selecciona un cliente y un producto existentes.", "El total se calcula con el precio del producto multiplicado por la cantidad."],
+            createQuestion: "¿Cómo registro una venta?"
+        },
+        {
+            name: "Cotizaciones",
+            key: "marqueza_cotizaciones",
+            aliases: ["cotizacion", "cotizaciones", "propuesta", "propuestas"],
+            description: "crea propuestas comerciales para clientes y permite seguir su estado",
+            fields: ["fecha", "cliente", "uno o más productos", "cantidad y precio unitario por producto", "total calculado", "estado", "notas"],
+            details: "El historial permite buscar por cliente o producto, filtrar por estado, editar o eliminar propuestas y descargar cada cotización como PDF. El balance se calcula con los datos locales de Insumos, Productos y Ventas.",
+            relations: ["Se elige un cliente y uno o más productos del catálogo.", "El total suma cantidad por precio unitario de cada producto."],
+            statuses: ["Pendiente", "Enviada", "Aprobada", "Rechazada"],
+            createQuestion: "¿Cómo creo una cotización?"
+        },
+        {
+            name: "Clientes",
+            key: "marqueza_clientes",
+            aliases: ["cliente", "clientes"],
+            description: "mantiene el directorio de contactos de clientes",
+            fields: ["nombre", "documento", "teléfono", "correo"],
+            details: "El resumen cuenta clientes, correos y teléfonos registrados, y calcula el porcentaje de fichas con todos sus campos completos.",
+            relations: ["Los clientes registrados pueden seleccionarse al crear Ventas y Cotizaciones."],
+            createQuestion: "¿Cómo registro un cliente?"
+        },
+        {
+            name: "Proveedores",
+            key: "marqueza_proveedores",
+            aliases: ["proveedor", "proveedores"],
+            description: "mantiene el directorio de empresas proveedoras y sus contactos",
+            fields: ["empresa", "contacto", "teléfono", "correo", "dirección"],
+            details: "El resumen muestra proveedores, contactos y teléfonos disponibles, y el porcentaje de fichas completas.",
+            relations: ["Los proveedores registrados pueden seleccionarse al crear Insumos."],
+            createQuestion: "¿Cómo registro un proveedor?"
+        },
+        {
+            name: "Usuarios",
+            key: "marqueza_usuarios",
+            aliases: ["usuario", "usuarios", "cuenta", "cuentas"],
+            description: "administra las cuentas y roles que pueden acceder a la aplicación",
+            fields: ["nombre", "correo", "rol"],
+            details: "Se pueden crear, consultar, editar y eliminar cuentas. Las contraseñas son datos privados: el asistente no las muestra ni las consulta.",
+            relations: [],
+            createQuestion: "¿Cómo administro los usuarios?"
+        },
+        {
+            name: "Registro de actividad",
+            key: "marqueza_bitacora",
+            aliases: ["registro de actividad", "bitacora", "auditoria", "historial de actividad", "errores"],
+            description: "consulta eventos de acceso, cambios de registros y errores de la aplicación",
+            fields: ["fecha y hora", "persona", "evento", "módulo", "detalle"],
+            details: "Permite buscar eventos, filtrar todos los eventos, cambios, accesos o errores, actualizar la vista y exportar el resultado como CSV. La bitácora local conserva hasta 500 eventos.",
+            relations: [],
+            createQuestion: "¿Qué registra la bitácora?"
+        }
     ];
 
+    const modules = [
+        {
+            name: "Inicio",
+            route: "inicio",
+            aliases: ["inicio", "dashboard", "panel principal", "resumen"],
+            description: "muestra indicadores y gráficas sobre inventario y actividad comercial",
+            fields: ["unidades en stock", "valor del inventario", "ingresos por ventas", "clientes y cotizaciones abiertas", "tendencias comerciales, inventario por categoría, actividad por módulo y estados de cotización"],
+            details: "Las gráficas comparan ventas y cotizaciones de los últimos seis meses, unidades por categoría, valor de productos e insumos, cantidad de registros por módulo y estados de las cotizaciones.",
+            key: null
+        },
+        ...dataModules.map((module) => ({ ...module, route: module.key.replace("marqueza_", "") }))
+    ];
+    modules.find((module) => module.name === "Registro de actividad").route = "log_errores";
+
     function normalize(value) {
-        return value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return String(value || "").toLowerCase().normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]+/g, " ")
+            .trim();
+    }
+
+    function hasPhrase(text, phrase) {
+        return ` ${text} `.includes(` ${normalize(phrase)} `);
     }
 
     const VOICE_LANG = "es-CO";
@@ -45,155 +140,304 @@
 
     function currentModule() {
         const path = normalize(decodeURIComponent(window.location.pathname));
-        return modules.find((module) => module.aliases.some((alias) => path.includes(alias))) || modules[0];
+        return modules.find((module) => path.includes(normalize(module.route))) || modules[0];
     }
 
-    function findModule(question) {
+    function findModules(question) {
         const normalized = normalize(question);
-        return modules.find((module) => module.aliases.some((alias) => normalized.includes(normalize(alias))));
+        return modules.filter((module) => module.aliases.some((alias) => hasPhrase(normalized, alias)));
     }
 
-    function localCount(module) {
-        if (!module.key) return null;
+    function readLocalRecords(module) {
+        if (!module.key) return { state: "not-applicable", records: [] };
         try {
             const value = localStorage.getItem(module.key);
-            if (value === null) return 0;
+            if (value === null) return { state: "empty", records: [] };
             const records = JSON.parse(value);
-            return Array.isArray(records) ? records.length : null;
-        } catch {
-            return null;
+            return Array.isArray(records)
+                ? { state: "available", records }
+                : { state: "invalid", records: [] };
+        } catch (error) {
+            return { state: "unavailable", records: [], error };
         }
+    }
+
+    function countRecords(module, question = "") {
+        const result = readLocalRecords(module);
+        if (result.state === "unavailable") return "No puedo acceder al almacenamiento local de este navegador para consultar ese conteo.";
+        if (result.state === "invalid") return `Los datos locales de ${module.name} no tienen el formato esperado, así que no puedo confirmar el conteo.`;
+        const normalized = normalize(question);
+        const records = module.name === "Cotizaciones" && /\b(abiertas|activas|vigentes)\b/.test(normalized)
+            ? result.records.filter((quote) => quote.estado !== "Rechazada")
+            : result.records;
+        const count = records.length;
+        if (module.name === "Cotizaciones" && records !== result.records) {
+            return `Hay ${count} cotizaciones abiertas o activas (se excluyen las rechazadas).`;
+        }
+        const labels = {
+            Insumos: ["insumo", "insumos"],
+            Productos: ["producto", "productos"],
+            Ventas: ["venta", "ventas"],
+            Cotizaciones: ["cotización", "cotizaciones"],
+            Clientes: ["cliente", "clientes"],
+            Proveedores: ["proveedor", "proveedores"],
+            Usuarios: ["usuario", "usuarios"],
+            "Registro de actividad": ["evento", "eventos"]
+        };
+        const label = labels[module.name][count === 1 ? 0 : 1];
+        const feminine = module.name === "Ventas" || module.name === "Cotizaciones";
+        const participle = feminine
+            ? count === 1 ? "guardada" : "guardadas"
+            : count === 1 ? "guardado" : "guardados";
+        return `Hay ${count} ${label} ${participle} en este navegador${result.state === "empty" ? "; todavía no hay registros" : ""}.`;
+    }
+
+    function inventoryAnswer(module, question) {
+        const result = readLocalRecords(module);
+        if (result.state === "unavailable") return `No puedo consultar el inventario de ${module.name} en el almacenamiento local de este navegador.`;
+        if (result.state === "invalid") return `Los datos locales de ${module.name} no tienen el formato esperado, así que no puedo calcular el inventario.`;
+        const records = result.records;
+        const units = records.reduce((total, item) => total + Number(item.cantidad || 0), 0);
+        const unitValue = module.name === "Insumos" ? "precioUnitario" : "precio";
+        const value = records.reduce((total, item) => total + Number(item.cantidad || 0) * Number(item[unitValue] || 0), 0);
+        const lowStock = records.filter((item) => Number(item.cantidad) <= 5).length;
+        const normalized = normalize(question);
+        if (/\b(bajo|bajos|baja|bajas)\b/.test(normalized)) {
+            return `Hay ${lowStock} ${module.name.toLowerCase()} con stock bajo (5 unidades o menos).`;
+        }
+        if (/\b(valor|costo|precio)\b/.test(normalized)) {
+            const money = Number(value || 0).toLocaleString("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
+            return `El valor estimado del inventario de ${module.name.toLowerCase()} es ${money}, calculado como cantidad por precio guardado localmente.`;
+        }
+        const lowStockText = lowStock === 1 ? "1 tiene" : `${lowStock} tienen`;
+        return `Hay ${units} unidades en ${records.length} registros de ${module.name.toLowerCase()}; ${lowStockText} stock bajo (5 unidades o menos).`;
+    }
+
+    function dashboardCounts() {
+        const results = dataModules.map((module) => ({ module, result: readLocalRecords(module) }));
+        const unavailable = results.find(({ result }) => result.state === "unavailable" || result.state === "invalid");
+        if (unavailable) {
+            return `No puedo resumir todos los módulos: no pude leer los datos de ${unavailable.module.name} en este navegador.`;
+        }
+        return `Inicio reúne estos registros locales: ${results.map(({ module, result }) => `${module.name}: ${result.records.length}`).join("; ")}.`;
+    }
+
+    function dashboardSummary() {
+        const results = dataModules.map((module) => ({ module, result: readLocalRecords(module) }));
+        const unavailable = results.find(({ result }) => result.state === "unavailable" || result.state === "invalid");
+        if (unavailable) {
+            return `No puedo calcular los indicadores ahora: no pude leer los datos de ${unavailable.module.name} en este navegador.`;
+        }
+        const records = Object.fromEntries(results.map(({ module, result }) => [module.name, result.records]));
+        const sum = (items, field) => items.reduce((total, item) => total + Number(item[field] || 0), 0);
+        const stock = sum(records.Productos, "cantidad");
+        const inventoryValue = records.Productos.reduce((total, item) => total + Number(item.cantidad || 0) * Number(item.precio || 0), 0);
+        const supplyValue = records.Insumos.reduce((total, item) => total + Number(item.cantidad || 0) * Number(item.precioUnitario || 0), 0);
+        const sales = sum(records.Ventas, "total");
+        const openQuotes = records.Cotizaciones.filter((quote) => quote.estado !== "Rechazada").length;
+        const money = (value) => Number(value || 0).toLocaleString("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
+        return `Según los datos locales de este navegador: ${stock} unidades en productos; valor estimado de productos e insumos ${money(inventoryValue + supplyValue)}; ventas registradas por ${money(sales)}; ${records.Clientes.length} clientes; ${openQuotes} cotizaciones no rechazadas. Estos indicadores reflejan los registros guardados aquí.`;
+    }
+
+    function moduleOverview(module) {
+        const fields = module.fields?.length ? ` Los datos que maneja incluyen ${module.fields.join(", ")}.` : "";
+        const details = module.details ? ` ${module.details}` : "";
+        const relations = module.relations?.length ? ` ${module.relations.join(" ")}` : "";
+        const statusNote = module.name === "Insumos"
+            ? " El formulario permite guardar estado Disponible, Agotado o Pedido; el indicador visible en la tabla se calcula por cantidad: Bajo hasta 5, Medio de 6 a 20 y Bueno por encima de 20."
+            : module.name === "Productos"
+                ? " La etiqueta de estado y los filtros de stock se calculan por cantidad: Bajo hasta 5, Medio de 6 a 20 y Bueno por encima de 20."
+                : "";
+        return `${module.name}: ${module.description}.${fields}${details}${relations}${statusNote}`;
+    }
+
+    function moduleWorkflow(module, intent) {
+        if (module.name === "Inicio" || module.name === "Registro de actividad") {
+            return `${module.name} es principalmente de consulta; no tiene un formulario para crear esos registros. ${module.name === "Inicio" ? "Usa sus tarjetas y gráficas para revisar inventario, ventas y cotizaciones." : "En Registro de actividad puedes buscar, filtrar todos los eventos, cambios, accesos o errores, actualizar la vista y exportar el resultado como CSV. La bitácora local conserva hasta 500 eventos."}`;
+        }
+        const create = {
+            Insumos: "Pulsa «Nuevo insumo», completa nombre, categoría, proveedor, cantidad, unidad, precio unitario y estado, y guarda. La cantidad debe ser al menos 1 y el precio no puede ser negativo.",
+            Productos: "Pulsa «Nuevo producto», completa código, nombre, cantidad, precio y estado, y guarda. El módulo incluye filtros por nivel de stock; la categoría se puede filtrar cuando está disponible en los registros.",
+            Ventas: "Pulsa «Nueva venta», selecciona fecha, cliente y producto, indica cantidad y guarda. El total se calcula automáticamente según el precio del producto y la cantidad.",
+            Cotizaciones: "Pulsa «Nueva cotización», elige fecha y cliente, agrega uno o más productos, indica cantidad y precio unitario, revisa el total calculado, elige estado y guarda. Las notas son opcionales.",
+            Clientes: "Pulsa «Nuevo cliente», completa nombre, documento, teléfono y correo, y guarda.",
+            Proveedores: "Pulsa «Nuevo proveedor», completa empresa, contacto, teléfono, correo y dirección, y guarda.",
+            Usuarios: "En el módulo Usuarios, pulsa «Nuevo usuario», completa nombre, correo, rol, contraseña y confirmación, y guarda. No compartas contraseñas con el asistente.",
+        }[module.name];
+        if (intent === "create") return create;
+        if (intent === "edit") return `Para editar un registro de ${module.name}, localízalo en la tabla y usa el botón de edición de su fila. Modifica los campos y guarda los cambios.${module.name === "Usuarios" ? " Al editar una cuenta, deja la contraseña nueva vacía si no quieres cambiarla." : ""}`;
+        if (intent === "delete") return `En ${module.name}, localiza la fila del registro y pulsa el botón de eliminar. La aplicación solicita confirmar la acción; eliminar no se puede deshacer.`;
+        if (intent === "search") {
+            const search = {
+                Insumos: "Puedes buscar por nombre, categoría o unidad; también filtrar por categoría y nivel de stock.",
+                Productos: "Puedes buscar por código, nombre o categoría; también filtrar por categoría y nivel de stock.",
+                Ventas: "Puedes buscar por cliente, producto o fecha.",
+                Cotizaciones: "Puedes buscar por cliente o producto, y filtrar por estado.",
+                Clientes: "Puedes buscar por nombre, documento, teléfono o correo.",
+                Proveedores: "Puedes buscar por empresa, contacto, teléfono o correo.",
+                Usuarios: "Puedes buscar por nombre o correo.",
+            }[module.name];
+            return `${module.name}: ${search}`;
+        }
+        if (intent === "export") {
+            const exportInfo = {
+                Insumos: "El botón «Exportar» descarga la tabla como PDF.",
+                Productos: "El botón «Exportar» descarga la tabla como PDF.",
+                Ventas: "El botón «Exportar» genera un archivo CSV.",
+                Cotizaciones: "Cada cotización tiene una acción para descargarla como PDF; no hay una exportación global de la lista.",
+                Clientes: "El botón «Exportar» genera un archivo CSV.",
+                Proveedores: "El botón «Exportar» genera un archivo CSV.",
+                Usuarios: "El módulo Usuarios no incluye un botón de exportación.",
+            }[module.name];
+            return `${module.name}: ${exportInfo}`;
+        }
+        return create;
     }
 
     function answerQuestion(question) {
         const normalized = normalize(question);
+        const explicitModules = findModules(question);
         const activeModule = currentModule();
-        const targetModule = findModule(question) || activeModule;
+        const module = explicitModules.length === 1 ? explicitModules[0] : activeModule;
 
-        if (/\b(hola|buenas|buenos dias|buenas tardes|buenas noches)\b/.test(normalized)) {
-            return "Hola. Puedo orientarte sobre esta pantalla, los módulos y el proyecto MARQUEZA. ¿Qué quieres consultar?";
+        if (/^(hola|buenas|buenos dias|buenas tardes|buenas noches|hey)$/.test(normalized)) {
+            return "Hola. Puedo ayudarte con funciones, campos, relaciones, búsqueda, exportación y datos locales de MARQUEZA. ¿Qué quieres consultar?";
         }
 
-        if (/\b(api|backend|mysql|servidor|conecta|conexion|localstorage|almacenamiento local|guardan los datos|almacenan los datos|donde se guardan)\b/.test(normalized)) {
-            return "El backend de MARQUEZA usa Flask y MySQL, y expone una API REST. El frontend está hecho con HTML, CSS y JavaScript; varias pantallas todavía guardan sus registros en localStorage. Por eso, un dato visible en el navegador no necesariamente está sincronizado con MySQL.";
+        if (/\b(?:ver|mostrar|revelar|decir|dime|cual es|que tiene)\b.*\b(contrasena|clave|password)\b/.test(normalized)
+            || /\b(contrasena|clave|password)\b.*\b(?:de|del|para)\s+[a-z0-9]+\b/.test(normalized)) {
+            return "No puedo mostrar ni recuperar contraseñas o credenciales. Si necesitas cambiar una, usa el módulo Usuarios o solicita ayuda a un administrador; nunca compartas una contraseña en el chat.";
         }
 
-        if (/\b(proyecto|marqueza|sistema|aplicacion|tecnologia|frontend|modulos|modulo)\b/.test(normalized)) {
-            return "MARQUEZA es una aplicación de gestión para una empresa de confecciones. Reúne clientes, proveedores, productos, insumos, ventas, cotizaciones, usuarios y registro de actividad. Su propósito es centralizar contactos, inventario y seguimiento comercial. El frontend usa HTML, CSS y JavaScript; el backend usa Flask y MySQL, aunque algunas pantallas aún trabajan con datos locales.";
+        if (/\b(requisitos|reglas|validacion|validaciones)\b.*\b(contrasena|clave)\b/.test(normalized)) {
+            return "En el formulario de registro, la contraseña debe tener al menos 8 caracteres, una letra mayúscula, una minúscula y un número; la confirmación debe coincidir. El nombre de usuario acepta entre 3 y 20 letras o números, y debes elegir un rol.";
         }
 
-        if (/\b(estado|estados|pendiente|enviada|aprobada|rechazada)\b/.test(normalized) && targetModule.name === "Cotizaciones") {
-            return "Las cotizaciones pueden estar Pendientes, Enviadas, Aprobadas o Rechazadas. Puedes revisar y filtrar esos estados desde la pantalla de Cotizaciones.";
+        if (/\b(tecnologia|tecnologias|lenguaje|lenguajes|framework)\b/.test(normalized)) {
+            return "La interfaz de este proyecto está implementada con HTML, CSS y JavaScript. En los archivos revisados, los módulos de gestión guardan datos en localStorage; el repositorio frontend no permite confirmar qué backend o servidor se usa.";
         }
 
-        if (/\b(datos|campos|informacion|incluye|contiene|guarda|almacena)\b/.test(normalized) && findModule(question)) {
-            return `${targetModule.name} ${targetModule.details}`;
+        if (/\b(modulos|que es marqueza|sobre el proyecto|que hace el sistema|que hace marqueza|funciones del sistema)\b/.test(normalized)) {
+            return "MARQUEZA reúne Inicio, Insumos, Productos, Ventas, Cotizaciones, Clientes, Proveedores, Usuarios y Registro de actividad. Desde esos módulos puedes consultar indicadores, gestionar inventario y contactos, registrar ventas y cotizaciones, administrar accesos y revisar eventos de la aplicación.";
         }
 
-        if (/\b(relacion|relaciona|asocia|vincula|depende)\b/.test(normalized)) {
-            if (targetModule.name === "Ventas") return "Las ventas se relacionan con un cliente y con los productos vendidos. Las líneas de producto incluyen cantidades; el valor depende de los precios registrados.";
-            if (targetModule.name === "Cotizaciones") return "Las cotizaciones se preparan para clientes y pueden incluir productos, cantidades, precios y un total.";
-            if (targetModule.name === "Insumos") return "Los insumos pueden relacionarse con un proveedor y con detalles de producción.";
-            if (targetModule.name === "Productos") return "Los productos pueden relacionarse con sus insumos y con las ventas en las que se incluyen.";
-            return `${targetModule.name} forma parte del flujo de gestión de MARQUEZA. ${targetModule.details}`;
-        }
-
-        // ---- Soporte: preguntas de "no puedo..." / "no funciona..." / situaciones y problemas ----
-
-        if (/\b(no puedo iniciar sesion|no me deja entrar|no inicia sesion|no reconoce mi usuario|usuario no registrado|contrasena incorrecta|error de acceso|no me deja iniciar)\b/.test(normalized)) {
-            return "Para iniciar sesión, el usuario tiene que existir primero en el módulo Usuarios (o en el registro), y la contraseña debe coincidir exactamente. Si el sistema dice \"usuario no registrado\", regístrate primero. Si dice que la contraseña es incorrecta, verifica mayúsculas y espacios; recuerda que el inicio de sesión valida contra los usuarios guardados en este navegador.";
-        }
-
-        if (/\b(olvide mi contrasena|recuperar contrasena|restablecer contrasena|reestablecer contrasena|perdi mi clave|cambiar mi contrasena)\b/.test(normalized)) {
-            return "En la pantalla de recuperación, ingresas tu correo y el sistema busca si existe una cuenta asociada. Si existe, guarda una solicitud de recuperación local, pero no cambia la contraseña automáticamente: debes contactar a un administrador para que la restablezca desde el módulo Usuarios.";
-        }
-
-        if (/\b(cerrar sesion|salir de la cuenta|desconectarme|cerrar mi cuenta)\b/.test(normalized)) {
-            return "Para cerrar sesión, usa el botón correspondiente en la barra lateral. Eso borra tu sesión activa guardada en este navegador y te regresa a la pantalla de inicio de sesión.";
-        }
-
-        if (/\b(no veo mis datos|se borraron mis datos|desaparecieron los registros|no aparecen los registros|perdi mi informacion|se perdio la informacion|no carga la tabla|tabla vacia)\b/.test(normalized)) {
-            return "La mayoría de los módulos todavía guardan la información en el almacenamiento local (localStorage) de este navegador, no en el servidor. Por eso, si abres la aplicación en otro navegador, en una ventana de incógnito, o si borraste los datos de navegación, los registros no van a aparecer: siguen en el otro navegador o se perdieron al limpiar el caché.";
-        }
-
-        if (/\b(no puedo guardar|no me deja guardar|no guarda el registro|no se guarda|campos incompletos|no se envia el formulario)\b/.test(normalized)) {
-            return "Si el formulario no guarda, revisa que TODOS los campos estén completos: el sistema rechaza el guardado si encuentra algún campo vacío y muestra el aviso \"Campos incompletos\". Completa cada campo del formulario y vuelve a intentar.";
-        }
-
-        if (/\b(como elimino|como borro|eliminar un registro|borrar un registro)\b/.test(normalized)) {
-            return "Para eliminar, usa el ícono de la papelera en la fila correspondiente de la tabla. El sistema pide confirmación antes de borrar porque la acción no se puede deshacer.";
-        }
-
-        if (/\b(como busco|como filtro|barra de busqueda|no encuentro un registro)\b/.test(normalized)) {
-            return "Cada módulo tiene un campo de búsqueda arriba de la tabla: escribe ahí y la tabla se filtra automáticamente comparando contra todos los datos del registro (no solo un campo), así que puedes buscar por cualquier dato visible.";
-        }
-
-        if (/\b(exportar|descargar datos|descargar registros|exportar pdf|exportar csv)\b/.test(normalized)) {
-            return "El botón de exportar descarga los registros del módulo actual en un archivo .csv (se puede abrir en Excel), aunque en algún módulo el botón diga \"PDF\" por el nombre interno; el formato real que se descarga es CSV.";
+        if (/\b(donde se guardan|donde guarda|almacenamiento|localstorage|se sincroniza|servidor|backend|api|mysql|flask)\b/.test(normalized)) {
+            return "En el frontend revisado, los registros de los módulos se leen y guardan en localStorage del navegador. Eso significa que los datos dependen de este navegador y perfil; no puedo confirmar sincronización con un servidor o backend desde este proyecto frontend.";
         }
 
         if (/\b(modo oscuro|tema oscuro|cambiar tema|modo claro)\b/.test(normalized)) {
-            return "El interruptor de tema está en la barra lateral: cambia entre modo claro y oscuro, y tu preferencia queda guardada en este navegador para la próxima vez que entres.";
+            return "Usa el interruptor de tema en la barra lateral para alternar entre modo claro y oscuro. La preferencia se guarda en este navegador.";
         }
 
-        if (/\b(no veo el menu|barra lateral no aparece|menu hamburguesa|no aparece el menu en el celular)\b/.test(normalized)) {
-            return "En pantallas pequeñas, el menú lateral se abre con el ícono de hamburguesa en la parte superior. En pantallas grandes, el ícono de flecha en la barra lateral la expande o la contrae.";
+        if (/\b(cerrar sesion|salir de la cuenta|desconectarme|cerrar mi cuenta)\b/.test(normalized)) {
+            return "Usa «Salir» en la barra lateral para cerrar la sesión activa y volver a la pantalla de inicio de sesión.";
         }
 
-        if (/\b(no me deja registrar|error al registrarme|no puedo crear mi cuenta|usuario ya existe|correo ya existe|correo ya registrado|requisitos de contrasena|como me registro|como creo una cuenta|como creo un usuario nuevo)\b/.test(normalized)) {
-            return "Para crear una cuenta nueva: el nombre de usuario debe tener entre 3 y 20 caracteres, solo letras y números (sin espacios ni símbolos); la contraseña necesita mínimo 8 caracteres con al menos una mayúscula, una minúscula y un número; debes confirmar la contraseña igual; y elegir un rol distinto de \"Ninguno\". Si dice \"usuario existente\" o \"correo existente\", significa que ya hay una cuenta registrada con esos datos: usa otro usuario/correo o inicia sesión con el que ya tienes.";
+        if (/\b(olvide mi contrasena|recuperar contrasena|restablecer contrasena|reestablecer contrasena|perdi mi clave|cambiar mi contrasena)\b/.test(normalized)) {
+            return "La pantalla de recuperación verifica el correo y, si encuentra la cuenta, registra una solicitud local. No cambia la contraseña automáticamente; contacta a un administrador para restablecerla. No envíes tu contraseña por este chat.";
         }
 
-        if (/\b(no funciona el microfono|no me escucha|no reconoce mi voz|activar microfono|permiso de microfono|el microfono no anda|no hay boton de microfono)\b/.test(normalized)) {
+        if (/\b(microfono|reconocimiento de voz|hablarle al asistente)\b/.test(normalized)) {
             if (!voiceInputSupported) {
-                return "Tu navegador no admite el reconocimiento de voz que uso, o la página no se está sirviendo de forma segura (HTTPS o localhost). Prueba abrir MARQUEZA en Chrome o Edge, y desde un servidor local en vez de abrir el archivo HTML directamente con doble clic.";
+                return "El reconocimiento de voz no está disponible en este navegador o contexto. Prueba con Chrome o Edge desde HTTPS o localhost; también puedes escribir tu pregunta.";
             }
-            return "Si el micrófono no responde, revisa que le hayas dado permiso al navegador para usarlo (clic en el candado de la barra de direcciones) y que tu equipo tenga un micrófono conectado y seleccionado como predeterminado. También necesitas conexión a internet, porque el reconocimiento de voz del navegador se procesa en línea.";
+            return "Pulsa el botón del micrófono y concede permiso al navegador. El reconocimiento de voz requiere un contexto seguro y puede necesitar conexión a internet; si falla, puedes escribir la pregunta.";
         }
 
-        if (/\b(tengo un problema|no funciona|hay un error|algo fallo|se dano|no carga la pagina|pantalla en blanco)\b/.test(normalized)) {
-            return "Cuéntame qué estabas haciendo cuando pasó (por ejemplo: \"no puedo guardar\", \"no inicia sesión\", \"no veo mis datos\") y te doy el paso a paso. Si el problema persiste, revisa el módulo Registro de actividad: ahí queda un historial de las acciones y accesos, y también puedes intentar recargar la página o limpiar el caché del navegador.";
+        if (/\b(voz|leer en voz alta|respuesta hablada)\b/.test(normalized)) {
+            return voiceOutputSupported
+                ? "El botón de volumen del encabezado activa o desactiva la lectura de respuestas. La preferencia se guarda en este navegador."
+                : "Este navegador no ofrece lectura de respuestas por voz; puedes usar el chat escribiendo tus preguntas.";
         }
 
-        if (/\b(cuantos|cuantas|total|cantidad|numero|registros)\b/.test(normalized) || (/\b(hay|existen)\b/.test(normalized) && findModule(question))) {
-            const count = localCount(targetModule);
-            if (count === null) {
-                return `No encuentro datos de ${targetModule.name} en el almacenamiento local de este navegador, así que no puedo confirmar un total.`;
+        if (/\b(no veo mis datos|se borraron mis datos|desaparecieron los registros|no aparecen los registros|perdi mi informacion|se perdio la informacion|no carga la tabla|tabla vacia)\b/.test(normalized)) {
+            return "Los registros se guardan localmente en el navegador. Comprueba que estés usando el mismo navegador y perfil, y que no hayas borrado sus datos. Si el problema continúa, consulta Registro de actividad; no limpies los datos del navegador si necesitas conservar registros.";
+        }
+
+        if (/\b(no puedo guardar|no me deja guardar|no guarda el registro|no se guarda|campos incompletos|no se envia el formulario)\b/.test(normalized)) {
+            return `Revisa los campos obligatorios y los valores válidos del formulario de ${module.name}. En los módulos de gestión, los registros se guardan localmente; si sigue fallando, anota el mensaje y revisa Registro de actividad.`;
+        }
+
+        if (/\b(menu hamburguesa|barra lateral no aparece|menu no aparece|no veo el menu)\b/.test(normalized)) {
+            return "En pantallas pequeñas, pulsa el botón de menú en la parte superior para abrir o cerrar la navegación. En pantallas grandes, usa la flecha lateral para expandir o contraerla.";
+        }
+
+        if (/\b(iniciar sesion|no me deja entrar|no inicia sesion|usuario no registrado|contrasena incorrecta|error de acceso)\b/.test(normalized)) {
+            return "El inicio de sesión valida el nombre de usuario y la contraseña contra las cuentas locales de este navegador. Verifica esos datos; si no existe la cuenta, usa el formulario de registro disponible o pide ayuda a un administrador. No compartas credenciales por el chat.";
+        }
+
+        if (/\b(editar|edito|actualizar|actualizo|modificar|modifico|cambiar)\b/.test(normalized)) return moduleWorkflow(module, "edit");
+        if (/\b(eliminar|elimino|borrar|borro|quitar)\b/.test(normalized)) return moduleWorkflow(module, "delete");
+        if (/\b(buscar|busco|busca|filtro|filtrar|no encuentro)\b/.test(normalized)) return moduleWorkflow(module, "search");
+        if (/\b(exportar|exporto|exporta|descargar|descargo|descarga|pdf|csv)\b/.test(normalized)) return moduleWorkflow(module, "export");
+
+        if (/\b(relacion|relaciona|relacionan|vinculo|vincula|asocia|depende)\b/.test(normalized)) {
+            if (explicitModules.length > 1) {
+                const relations = explicitModules.flatMap((item) => item.relations || []);
+                return relations.length
+                    ? [...new Set(relations)].join(" ")
+                    : `No encontré una relación directa documentada entre ${explicitModules.map((item) => item.name).join(" y ")}.`;
             }
-            const countLabel = count === 1 ? targetModule.singular || targetModule.name.toLowerCase() : targetModule.plural || targetModule.name.toLowerCase();
-            return `Hay ${count} ${countLabel} en el almacenamiento local de este navegador.`;
+            return module.relations?.length
+                ? module.relations.join(" ")
+                : `No encontré una relación directa documentada para ${module.name}.`;
+        }
+
+        if (/\b(estado|estados|pendiente|enviada|aprobada|rechazada|disponible|agotado|pedido)\b/.test(normalized) && module.statuses) {
+            if (module.name === "Insumos") {
+                return "En el formulario de Insumos puedes elegir Disponible, Agotado o Pedido. La etiqueta de la tabla y los filtros de stock son calculados por cantidad: Bajo hasta 5, Medio de 6 a 20 y Bueno por encima de 20.";
+            }
+            return `${module.name} maneja estos estados o niveles: ${module.statuses.join(", ")}.`;
+        }
+
+        if (/\b(indicador|indicadores|metrica|metricas|grafica|graficas|resumen|valor del inventario|ingresos|stock|cotizaciones abiertas)\b/.test(normalized) && module.name === "Inicio") {
+            return dashboardSummary();
+        }
+
+        if (/\b(cuantos|cuantas|cuanto|cuanta|total|cantidad|numero|registros)\b/.test(normalized)
+            || (/\b(hay|existen)\b/.test(normalized) && explicitModules.length > 0 && !/\b(datos|campos|informacion|detalles)\b/.test(normalized))) {
+            if (explicitModules.length > 1) return explicitModules.map((item) => countRecords(item, question)).join(" ");
+            if (module.name === "Inicio") return dashboardCounts();
+            if ((module.name === "Productos" || module.name === "Insumos") && /\b(stock|unidades|existencias|inventario|bajo|bajos)\b/.test(normalized)) {
+                return inventoryAnswer(module, question);
+            }
+            return countRecords(module, question);
+        }
+
+        if (explicitModules.length > 1 && !/\b(comparar|diferencia|relacion|relacionan|vinculo)\b/.test(normalized)) {
+            return `Mencionaste varios módulos (${explicitModules.map((item) => item.name).join(", ")}). ¿Sobre cuál quieres saber más?`;
+        }
+
+        if (/\b(datos|campos|informacion|incluye|contiene|maneja|guarda|almacena)\b/.test(normalized)) {
+            return moduleOverview(module);
         }
 
         if (/\b(que hace|que puedo hacer|que hay en|esta pagina|esta pantalla|para que sirve|funciona)\b/.test(normalized)) {
-            const count = localCount(targetModule);
-            const countText = count === null ? "" : ` Actualmente hay ${count} registros locales.`;
-            return `Esta es la pantalla de ${targetModule.name}: ${targetModule.description}. ${targetModule.details}${countText}`;
+            return moduleOverview(module);
         }
 
-        if (/\b(crear|creo|agregar|agrego|anadir|registro|registrar|nuevo|nueva|guardar|guardo|editar|edito|eliminar|elimino|buscar|busco|filtrar|filtro)\b/.test(normalized)) {
-            if (targetModule.name === "Inicio" || targetModule.name === "Registro de actividad") {
-                return `La pantalla de ${targetModule.name} sirve para consultar información; no es un formulario de creación de registros. Usa la barra lateral para abrir el módulo que quieras gestionar.`;
-            }
-            return `En ${targetModule.name}, usa el botón principal para crear un registro. Después de guardarlo, aparecerá en la tabla, donde podrás consultarlo, editarlo o eliminarlo.`;
+        if (/\b(crear|creo|agregar|agrego|anadir|registro|registrar|nuevo|nueva|guardar)\b/.test(normalized)) {
+            return moduleWorkflow(module, "create");
         }
 
-        if (findModule(question)) {
-            const count = localCount(targetModule);
-            const countText = count === null ? " No hay datos locales disponibles para contar." : ` Hay ${count} registros locales.`;
-            return `El módulo ${targetModule.name} se usa para ${targetModule.description.replace(/^la gestión de |^el registro y consulta de |^la creación y seguimiento de |^los datos de contacto de |^la información de |^las cuentas y roles de acceso al sistema/, "")}. ${targetModule.details}${countText}`;
+        if (explicitModules.length === 1) return moduleOverview(module);
+
+        if (/\b(problema|error|no funciona|algo fallo|no carga)\b/.test(normalized)) {
+            return "Cuéntame qué módulo usabas, qué acción intentabas realizar y qué mensaje apareció. Puedes revisar Registro de actividad para consultar errores y eventos de acceso; no compartas contraseñas ni datos privados.";
         }
 
-        return "Puedo responder sobre el proyecto, esta pantalla y los conteos guardados localmente. No tengo un servicio de IA conectado ni acceso a información fuera de la aplicación. Prueba preguntando, por ejemplo: ¿Qué hace esta página? o ¿Cuántos clientes hay?";
+        return "Puedo orientar sobre los módulos, sus campos y funciones, y consultar conteos locales. No uso un servicio de IA ni puedo acceder a datos fuera de este navegador. Indica el módulo y qué necesitas saber; por ejemplo: «¿Qué campos tiene Clientes?» o «¿Cómo exporto Cotizaciones?»";
     }
 
     function suggestedQuestions(module) {
         if (module.name === "Inicio") {
-            return [module.countQuestion, "¿Cómo se guardan los datos?", "¿Qué muestra esta pantalla?"];
+            return ["¿Qué módulos tiene MARQUEZA?", "¿Qué indicadores muestra Inicio?", "¿Dónde se guardan los datos?"];
         }
-        if (module.name === "Registro de actividad") {
-            return [module.createQuestion, module.countQuestion, "¿Qué módulos tiene MARQUEZA?"];
-        }
-        return [module.countQuestion, module.createQuestion, `¿Qué datos maneja ${module.name}?`];
+        return [
+            `¿Qué campos maneja ${module.name}?`,
+            module.name === "Registro de actividad" ? "¿Cómo filtro los eventos?" : `¿Cómo registro ${module.name === "Insumos" ? "un insumo" : module.name === "Productos" ? "un producto" : module.name === "Ventas" ? "una venta" : module.name === "Cotizaciones" ? "una cotización" : module.name === "Clientes" ? "un cliente" : module.name === "Proveedores" ? "un proveedor" : "un usuario"}?`,
+            `¿Cuántos ${module.name === "Registro de actividad" ? "eventos" : module.name.toLowerCase()} hay?`
+        ];
     }
 
     function createElement(tagName, className, text) {
@@ -243,7 +487,7 @@
     messages.setAttribute("aria-label", "Conversacion");
     const intro = createElement("div", "marqueza-assistant-intro");
     intro.append(createElement("p", "", "Hola, soy tu asistente contextual."));
-    intro.append(createElement("p", "", "Pregunta por los módulos, los datos o cómo realizar una tarea."));
+    intro.append(createElement("p", "", "Pregunta por las funciones, campos, procesos o conteos locales. No consulto datos externos ni contraseñas."));
     const suggestions = createElement("div", "marqueza-assistant-suggestions");
     suggestedQuestions(currentModule()).forEach((suggestion) => {
         const button = createElement("button", "marqueza-assistant-suggestion", suggestion);
